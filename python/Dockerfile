@@ -27,7 +27,7 @@ RUN pip install \
 
 FROM public.ecr.aws/docker/library/python:buster
 
-RUN pip install --upgrade html2image
+RUN pip install --upgrade html2image boto3
 RUN apt-get update -y && apt-get install -y chromium
 
 
