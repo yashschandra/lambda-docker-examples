@@ -10,5 +10,5 @@ def handler(event, context):
     print(event)
     hti = Html2Image(output_path='/tmp')
     hti.screenshot(html_str=event['html_str'], save_as='dummy.png')
-    upload_file('/tmp/bounty.png', 'posters/test/dummy.png')
+    upload_file('/tmp/dummy.png', 'posters/test/dummy.png')
     return "it works"
