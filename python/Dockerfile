@@ -27,12 +27,7 @@ RUN pip install \
 
 FROM public.ecr.aws/docker/library/python:buster
 
-RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python -
-
-RUN $HOME/.poetry/bin/poetry install
-RUN $HOME/.poetry/bin/poetry build
-RUN pip install dist/*.whl
-
+RUN pip install --upgrade html2image
 RUN apt-get update -y && apt-get install -y chromium
 
 
