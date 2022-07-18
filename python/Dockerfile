@@ -14,5 +14,4 @@ RUN pip install selenium boto3
 COPY --from=build /opt/chrome-linux /opt/chrome
 COPY --from=build /opt/chromedriver /opt/
 COPY app/* ./
-ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD [ "app.handler" ]
