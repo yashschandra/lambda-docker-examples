@@ -21,17 +21,17 @@ def handler(event, context):
         driver = webdriver.Chrome("/opt/chromedriver",
                                 options=options)
         print('driver opened')
-    except e:
+    except Exception as e:
         print('driver not open ', e)
     try:
         driver.get("data:text/html;charset=utf-8," + event['html_str'])
         print('driver got, upload...')
-    except e:
+    except Exception as e:
         print('driver did not get ', e)
     try:
         with io.BytesIO(driver.get_screenshot_as_png()) as f:
             s3.upload_fileobj(f, 'bounty-public', 'posters/test/screenshot.png')
             print('uploaded')
-    except e:
+    except Exception as e:
         print('not able to upload ', e)
     driver.close()
