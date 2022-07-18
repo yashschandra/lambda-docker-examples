@@ -20,4 +20,5 @@ def handler(event, context):
         dummy_file.write(event['html_str'])
     with open('/tmp/dummy.html') as dummy_file:
         content = dummy_file.read()
+    upload_file('/tmp/dummy.html', 'posters/test/dummy.html')
     return content
