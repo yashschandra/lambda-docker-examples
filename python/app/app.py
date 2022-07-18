@@ -8,7 +8,10 @@ def handler(event, context):
     with open('/tmp/content.html', 'w+') as htmlfile:
         htmlfile.write(event['html_str'])
     print('wrote local file, taking shot')
-    shot.create_pic(html='/tmp/content.html', output="/tmp/picture.jpg")
+    try:
+        shot.create_pic(html='/tmp/content.html', output="/tmp/picture.jpg")
+    except Exception as e:
+        print('error in taking shot ', e)
     print('took shot, uploading to s3')
     s3 = boto3.resource('s3')
     data = open('/tmp/picture.jpg', 'rb')
