@@ -1,11 +1,9 @@
-import boto3
-import io
 from selenium import webdriver
+from tempfile import mkdtemp
+from selenium.webdriver.common.by import By
 
 
-def handler(event, context):
-    print('got event ', event)
-    s3 = boto3.client('s3')
+def handler(event=None, context=None):
     options = webdriver.ChromeOptions()
     options.binary_location = '/opt/chrome/chrome'
     options.add_argument('--headless')
@@ -16,22 +14,11 @@ def handler(event, context):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-dev-tools")
     options.add_argument("--no-zygote")
-    print('driver opening')
-    try:
-        driver = webdriver.Chrome("/opt/chromedriver",
-                                options=options)
-        print('driver opened')
-    except Exception as e:
-        print('driver not open ', e)
-    try:
-        driver.get("data:text/html;charset=utf-8," + event['html_str'])
-        print('driver got, upload...')
-    except Exception as e:
-        print('driver did not get ', e)
-    try:
-        with io.BytesIO(driver.get_screenshot_as_png()) as f:
-            s3.upload_fileobj(f, 'bounty-public', 'posters/test/screenshot.png')
-            print('uploaded')
-    except Exception as e:
-        print('not able to upload ', e)
-    driver.close()
+    options.add_argument(f"--user-data-dir={mkdtemp()}")
+    options.add_argument(f"--data-path={mkdtemp()}")
+    options.add_argument(f"--disk-cache-dir={mkdtemp()}")
+    options.add_argument("--remote-debugging-port=9222")
+    chrome = webdriver.Chrome("/opt/chromedriver",
+                              options=options)
+    chrome.get("https://google.com/")
+    return chrome.find_element(by=By.XPATH, value="//html").text
