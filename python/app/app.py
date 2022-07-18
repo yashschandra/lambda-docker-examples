@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 
 
 def handler(event=None, context=None):
+    print('driver opening')
     options = webdriver.ChromeOptions()
     options.binary_location = '/opt/chrome/chrome'
     options.add_argument('--headless')
@@ -20,5 +21,6 @@ def handler(event=None, context=None):
     options.add_argument("--remote-debugging-port=9222")
     chrome = webdriver.Chrome("/opt/chromedriver",
                               options=options)
+    print('driver opened')
     chrome.get("https://google.com/")
     return chrome.find_element(by=By.XPATH, value="//html").text
