@@ -4,7 +4,7 @@ from selenium import webdriver
 
 
 def handler(event, context):
-    print(event)
+    print('got event ', event)
     s3 = boto3.client('s3')
     options = webdriver.ChromeOptions()
     options.binary_location = '/opt/chrome/chrome'
@@ -16,9 +16,13 @@ def handler(event, context):
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-dev-tools")
     options.add_argument("--no-zygote")
-    driver = webdriver.Chrome("/opt/chromedriver",
-                              options=options)
-    print('driver opened')
+    print('driver opening')
+    try:
+        driver = webdriver.Chrome("/opt/chromedriver",
+                                options=options)
+        print('driver opened')
+    except e:
+        print('driver not open ', e)
     try:
         driver.get("data:text/html;charset=utf-8," + event['html_str'])
         print('driver got, upload...')
