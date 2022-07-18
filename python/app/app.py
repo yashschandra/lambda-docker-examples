@@ -16,10 +16,8 @@ def upload_file(local_file, s3_file):
 
 def handler(event, context):
     print(event)
-    hti = Html2Image()
-    print('taking screenshot...')
-    hti.screenshot(html_str=event['html_str'], save_as='dummy.png')
-    print('screenshot done, uploading ...')
-    upload_file('dummy.png', 'posters/test/dummy.png')
-    print('uploaded...')
-    return "it works"
+    with open('/tmp/dummy.html', 'w+') as dummy_file:
+        dummy_file.write(event['html_str'])
+    with open('/tmp/dummy.html') as dummy_file:
+        content = dummy_file.read()
+    return content
