@@ -1,52 +1,18 @@
-# Define custom function directory
-ARG FUNCTION_DIR="/function"
+FROM public.ecr.aws/lambda/python@sha256:7d8911778d8262a4495b778a9a3a5eb29c2b888ae10d29b07a0a7a7cfaa1b68a as build
+RUN yum install -y unzip && \
+    curl -Lo "/tmp/chromedriver.zip" "https://chromedriver.storage.googleapis.com/103.0.5060.53/chromedriver_linux64.zip" && \
+    curl -Lo "/tmp/chrome-linux.zip" "https://www.googleapis.com/download/storage/v1/b/chromium-browser-snapshots/o/Linux_x64%2F1002910%2Fchrome-linux.zip?alt=media" && \
+    unzip /tmp/chromedriver.zip -d /opt/ && \
+    unzip /tmp/chrome-linux.zip -d /opt/
 
-FROM public.ecr.aws/docker/library/python:buster as build-image
-
-# Include global arg in this stage of the build
-ARG FUNCTION_DIR
-
-# Install aws-lambda-cpp build dependencies
-RUN apt-get update && \
-  apt-get install -y \
-  g++ \
-  make \
-  cmake \
-  unzip \
-  libcurl4-openssl-dev
-
-# Copy function code
-RUN mkdir -p ${FUNCTION_DIR}
-COPY app/* ${FUNCTION_DIR}
-
-# Install the function's dependencies
-RUN pip install \
-    --target ${FUNCTION_DIR} \
-        awslambdaric
-
-
-FROM public.ecr.aws/docker/library/python:buster
-
-RUN pip install --upgrade html2image boto3
-RUN apt-get update -y && apt-get install -y chromium
-
-
-# CHROMIUM default flags for container environnement
-# The --no-sandbox flag is needed by default since we execute chromium in a root environnement
-RUN echo 'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox"' >> /etc/chromium.d/default-flags
-
-# MOTD
-RUN echo " \n =============HTML2IMAGE============= \n Welcome to the html2image CLI container ! \n Type html2image -h for help :)" >> /etc/motd
-RUN echo "clear" >> /root/.bashrc
-RUN echo "cat /etc/motd" >> /root/.bashrc
-
-# Include global arg in this stage of the build
-ARG FUNCTION_DIR
-# Set working directory to function root directory
-WORKDIR ${FUNCTION_DIR}
-
-# Copy in the built dependencies
-COPY --from=build-image ${FUNCTION_DIR} ${FUNCTION_DIR}
-
+FROM public.ecr.aws/lambda/python@sha256:7d8911778d8262a4495b778a9a3a5eb29c2b888ae10d29b07a0a7a7cfaa1b68a
+RUN yum install atk cups-libs gtk3 libXcomposite alsa-lib \
+    libXcursor libXdamage libXext libXi libXrandr libXScrnSaver \
+    libXtst pango at-spi2-atk libXt xorg-x11-server-Xvfb \
+    xorg-x11-xauth dbus-glib dbus-glib-devel -y
+RUN pip install selenium boto3
+COPY --from=build /opt/chrome-linux /opt/chrome
+COPY --from=build /opt/chromedriver /opt/
+COPY app/* ./
 ENTRYPOINT [ "/usr/local/bin/python", "-m", "awslambdaric" ]
 CMD [ "app.handler" ]

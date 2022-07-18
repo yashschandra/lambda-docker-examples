@@ -1,28 +1,25 @@
-from html2image import Html2Image
 import boto3
-
-def upload_file(local_file, s3_file):
-    print('local file ', local_file, ' s3 file ', s3_file)
-    s3 = boto3.client('s3')
-    try:
-        s3.upload_file(local_file, 'bounty-public', s3_file)
-    except FileNotFoundError:
-        print("The file was not found")
-    except NoCredentialsError:
-        print("Credentials not available")
-    except e:
-        print('exception ', e)
+import io
+from selenium import webdriver
 
 
 def handler(event, context):
     print(event)
-    hti = Html2Image(output_path='/tmp')
-    print('taking screenshot...')
-    try:
-        hti.screenshot(html_str=event['html_str'], save_as='dummy.png')
-        print('screenshot done, uploading ...')
-    except e:
-        print('exception while taking screenshot ', e)
-    upload_file('/tmp/dummy.png', 'posters/test/dummy.png')
-    print('uploaded...')
-    return "it works"
+    s3 = boto3.client('s3')
+    options = webdriver.ChromeOptions()
+    options.binary_location = '/opt/chrome/chrome'
+    options.add_argument('--headless')
+    options.add_argument('--no-sandbox')
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1280x1696")
+    options.add_argument("--single-process")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-dev-tools")
+    options.add_argument("--no-zygote")
+    options.add_argument("--remote-debugging-port=9222")
+    driver = webdriver.Chrome("/opt/chromedriver",
+                              options=options)
+    driver.get("data:text/html;charset=utf-8," + event['html_str'])
+    with io.BytesIO(driver.get_screenshot_as_png()) as f:
+        s3.upload_fileobj(f, 'bounty-public', 'posters/test/screenshot.png')
+    driver.close()
